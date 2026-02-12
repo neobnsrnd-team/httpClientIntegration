@@ -1,0 +1,63 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: mydata-client
+
+external-systems:
+  bank:
+    base-url: http://localhost:8081
+    success-code-field: result_code
+    success-code-value: "0000"
+    error-message-field: result_msg
+    data-field: data
+    connect-timeout: 5000
+    read-timeout: 10000
+    messages:
+      account-list:
+        transaction-code: 계좌목록조회
+        method: GET
+        path: /api/bank/accounts
+      transfer:
+        transaction-code: 이체
+        method: POST
+        path: /api/bank/transfer
+        body-fields:
+          fromAccountNo: fromAccountNo
+          toAccountNo: toAccountNo
+          amount: amount
+      account-transactions:
+        transaction-code: 계좌거래내역조회
+        method: GET
+        path: /api/bank/accounts/{accountNo}/transactions
+        path-variables:
+          - accountNo
+        query-params:
+          fromDate: fromDate
+          toDate: toDate
+
+  card:
+    base-url: http://localhost:8082
+    success-code-field: status
+    success-code-value: SUCCESS
+    error-message-field: message
+    data-field: payload
+    connect-timeout: 5000
+    read-timeout: 10000
+    messages:
+      card-list:
+        transaction-code: 보유카드목록조회
+        method: GET
+        path: /api/card/cards
+      scheduled-payment:
+        transaction-code: 결제예정금액조회
+        method: GET
+        path: /api/card/cards/{cardNo}/scheduled-payments
+        path-variables:
+          - cardNo
