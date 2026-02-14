@@ -84,3 +84,39 @@ external-systems:
         body-fields:
           policyNo: policyNo
           amount: amount
+
+  giro:
+    base-url: http://localhost:8084
+    success-code-field: rsp_cd
+    success-code-value: "000"
+    error-message-field: rsp_msg
+    data-field: rsp_data
+    connect-timeout: 5000
+    read-timeout: 10000
+    messages:
+      bill-list:
+        transaction-code: 지로청구서목록조회
+        method: GET
+        path: /api/giro/bills
+        query-params:
+          cust_id: custId
+        response-mapping:
+          bill_no: billNumber
+          bill_nm: billName
+          pay_amt: paymentAmount
+          due_dt: dueDate
+          pay_st: paymentStatus
+          org_nm: organizationName
+      payment:
+        transaction-code: 지로납부
+        method: POST
+        path: /api/giro/payment
+        body-fields:
+          bill_no: billNo
+          pay_amt: amount
+        response-mapping:
+          pay_no: paymentNumber
+          bill_no: billNumber
+          pay_amt: paymentAmount
+          pay_dt: paymentDate
+          pay_st: paymentStatus

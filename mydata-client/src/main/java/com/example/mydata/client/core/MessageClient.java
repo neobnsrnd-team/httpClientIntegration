@@ -67,7 +67,7 @@ public abstract class MessageClient {
         String responseBody = httpClient.execute(url, method, body);
 
         // 4. 응답 파싱
-        return parseResponse(responseBody);
+        return parseResponse(responseBody, spec.getResponseMapping());
     }
 
     private String buildUrl(MessageSpecProperties spec, Map<String, Object> params) {
@@ -117,7 +117,7 @@ public abstract class MessageClient {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> parseResponse(String responseBody) {
+    private Map<String, Object> parseResponse(String responseBody, Map<String, String> responseMapping) {
         try {
             Map<String, Object> fullResponse = objectMapper.readValue(responseBody,
                     objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
@@ -133,10 +133,15 @@ public abstract class MessageClient {
             // 데이터 영역 추출
             Object data = fullResponse.get(properties.getDataField());
             if (data instanceof Map) {
-                return (Map<String, Object>) data;
+                return applyMapping((Map<String, Object>) data, responseMapping);
             } else if (data instanceof List) {
+                List<Object> mappedItems = ((List<Object>) data).stream()
+                        .map(item -> item instanceof Map
+                                ? (Object) applyMapping((Map<String, Object>) item, responseMapping)
+                                : item)
+                        .collect(Collectors.toList());
                 Map<String, Object> result = new LinkedHashMap<>();
-                result.put("items", data);
+                result.put("items", mappedItems);
                 return result;
             } else if (data == null) {
                 return new LinkedHashMap<>();
@@ -149,5 +154,17 @@ public abstract class MessageClient {
         } catch (JsonProcessingException e) {
             throw new ExternalSystemException("PARSE_ERROR", "응답 파싱 실패: " + e.getMessage(), e);
         }
+    }
+
+    private Map<String, Object> applyMapping(Map<String, Object> data, Map<String, String> responseMapping) {
+        if (responseMapping == null || responseMapping.isEmpty()) {
+            return data;
+        }
+        Map<String, Object> mapped = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            String key = responseMapping.getOrDefault(entry.getKey(), entry.getKey());
+            mapped.put(key, entry.getValue());
+        }
+        return mapped;
     }
 }

@@ -2,6 +2,7 @@ package com.example.mydata.service;
 
 import com.example.mydata.client.bank.BankMessageClient;
 import com.example.mydata.client.card.CardMessageClient;
+import com.example.mydata.client.giro.GiroMessageClient;
 import com.example.mydata.client.insurance.InsuranceMessageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ public class MydataService {
     private final BankMessageClient bankMessageClient;
     private final CardMessageClient cardMessageClient;
     private final InsuranceMessageClient insuranceMessageClient;
+    private final GiroMessageClient giroMessageClient;
 
     // ========== Banking ==========
 
@@ -70,6 +72,23 @@ public class MydataService {
         log.info("[Insurance] 보험료납부 요청: policyNo={}, amount={}", policyNo, amount);
         return insuranceMessageClient.request("보험료납부", Map.of(
                 "policyNo", policyNo,
+                "amount", amount
+        ));
+    }
+
+    // ========== GIRO ==========
+
+    public Map<String, Object> getBillList(String custId) {
+        log.info("[GIRO] 지로청구서목록조회 요청: custId={}", custId);
+        return giroMessageClient.request("지로청구서목록조회", Map.of(
+                "custId", custId
+        ));
+    }
+
+    public Map<String, Object> payBill(String billNo, long amount) {
+        log.info("[GIRO] 지로납부 요청: billNo={}, amount={}", billNo, amount);
+        return giroMessageClient.request("지로납부", Map.of(
+                "billNo", billNo,
                 "amount", amount
         ));
     }

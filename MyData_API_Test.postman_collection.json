@@ -2,7 +2,7 @@
   "info": {
     "name": "MyData API 테스트",
     "_postman_id": "mydata-api-test-collection",
-    "description": "MyData HTTP Client Integration - Banking, Card & Insurance API 테스트 컬렉션",
+    "description": "MyData HTTP Client Integration - Banking, Card, Insurance & GIRO API 테스트 컬렉션",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,6 +17,10 @@
     {
       "key": "insuranceBaseUrl",
       "value": "http://localhost:8083"
+    },
+    {
+      "key": "giroBaseUrl",
+      "value": "http://localhost:8084"
     },
     {
       "key": "mydataBaseUrl",
@@ -1038,8 +1042,398 @@
       ]
     },
     {
+      "name": "GIRO API",
+      "item": [
+        {
+          "name": "성공 케이스",
+          "item": [
+            {
+              "name": "지로청구서목록조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/bills?cust_id=C001",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "cust_id",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 000 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('000');",
+                      "    pm.expect(json.rsp_msg).to.eql('정상처리');",
+                      "});",
+                      "",
+                      "pm.test('청구서 목록 3건 반환 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_data).to.be.an('array');",
+                      "    pm.expect(json.rsp_data).to.have.lengthOf(3);",
+                      "});",
+                      "",
+                      "pm.test('청구서 데이터 필드 존재 확인 (약어)', function () {",
+                      "    var bill = pm.response.json().rsp_data[0];",
+                      "    pm.expect(bill).to.have.property('bill_no');",
+                      "    pm.expect(bill).to.have.property('bill_nm');",
+                      "    pm.expect(bill).to.have.property('pay_amt');",
+                      "    pm.expect(bill).to.have.property('due_dt');",
+                      "    pm.expect(bill).to.have.property('pay_st');",
+                      "    pm.expect(bill).to.have.property('org_nm');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 - 정상 납부 성공",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bill_no\": \"BILL-2024-001\",\n  \"pay_amt\": 50000\n}"
+                },
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/payment",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 000 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('000');",
+                      "    pm.expect(json.rsp_msg).to.eql('정상처리');",
+                      "});",
+                      "",
+                      "pm.test('납부 결과 데이터 확인 (약어)', function () {",
+                      "    var data = pm.response.json().rsp_data;",
+                      "    pm.expect(data).to.have.property('pay_no');",
+                      "    pm.expect(data.bill_no).to.eql('BILL-2024-001');",
+                      "    pm.expect(data.pay_amt).to.eql(50000);",
+                      "    pm.expect(data.pay_st).to.eql('COMPLETED');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "비즈니스 에러 케이스",
+          "item": [
+            {
+              "name": "지로청구서목록조회 실패 - 고객 미존재 (GIRO001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/bills?cust_id=9999999",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "cust_id",
+                      "value": "9999999"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 GIRO001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('GIRO001');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_msg).to.eql('고객을 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 실패 - 청구서 미존재 (GIRO001)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bill_no\": \"BILL-9999-999\",\n  \"pay_amt\": 50000\n}"
+                },
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/payment",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 GIRO001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('GIRO001');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_msg).to.eql('청구서를 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 실패 - 납부기한 만료 (GIRO002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bill_no\": \"BILL-EXPIRED-001\",\n  \"pay_amt\": 50000\n}"
+                },
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/payment",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 GIRO002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('GIRO002');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_msg).to.eql('납부기한이 만료되었습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 실패 - 금액 오류 (GIRO003)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bill_no\": \"BILL-2024-001\",\n  \"pay_amt\": -1000\n}"
+                },
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/payment",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 GIRO003 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('GIRO003');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_msg).to.eql('납부 금액이 올바르지 않습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "HTTP 에러 케이스",
+          "item": [
+            {
+              "name": "지로청구서목록조회 실패 - cust_id 누락 (400)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/bills",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "bills"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 실패 - 잘못된 JSON Body (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "invalid json body"
+                },
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/payment",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로청구서목록조회 실패 - 시스템 장애 (500)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{giroBaseUrl}}/api/giro/bills?cust_id=ERROR",
+                  "host": ["{{giroBaseUrl}}"],
+                  "path": ["api", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "cust_id",
+                      "value": "ERROR"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 500 확인', function () {",
+                      "    pm.response.to.have.status(500);",
+                      "});",
+                      "",
+                      "pm.test('시스템 장애 에러코드 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.rsp_cd).to.eql('SYS001');",
+                      "    pm.expect(json.rsp_msg).to.eql('시스템 장애가 발생했습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "MyData Client API (통합)",
-      "description": "MyData Client(8080)를 통한 Banking/Card/Insurance 통합 호출 테스트. 응답은 MydataResponse 표준 포맷으로 반환됩니다.",
+      "description": "MyData Client(8080)를 통한 Banking/Card/Insurance/GIRO 통합 호출 테스트. 응답은 MydataResponse 표준 포맷으로 반환됩니다.",
       "item": [
         {
           "name": "Banking 성공 케이스",
@@ -1860,6 +2254,273 @@
                   "query": [
                     {
                       "key": "customerId",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode CONNECTION_ERROR 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('CONNECTION_ERROR');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage에 \"외부 시스템 연결 실패\" 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.include('외부 시스템 연결 실패');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "GIRO 성공 케이스",
+          "item": [
+            {
+              "name": "지로청구서목록조회 - MyData 경유 정상 조회 성공 (매핑된 필드명)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/giro/bills?custId=C001",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "custId",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "    pm.expect(json.resultMessage).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('청구서 목록 반환 확인 (data.items 래핑)', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('items');",
+                      "    pm.expect(json.data.items).to.be.an('array');",
+                      "    pm.expect(json.data.items).to.have.lengthOf(3);",
+                      "});",
+                      "",
+                      "pm.test('매핑된 필드명 확인 (bill_no→billNumber 등)', function () {",
+                      "    var bill = pm.response.json().data.items[0];",
+                      "    pm.expect(bill).to.have.property('billNumber');",
+                      "    pm.expect(bill).to.have.property('billName');",
+                      "    pm.expect(bill).to.have.property('paymentAmount');",
+                      "    pm.expect(bill).to.have.property('dueDate');",
+                      "    pm.expect(bill).to.have.property('paymentStatus');",
+                      "    pm.expect(bill).to.have.property('organizationName');",
+                      "});",
+                      "",
+                      "pm.test('원래 약어 필드명 없음 확인', function () {",
+                      "    var bill = pm.response.json().data.items[0];",
+                      "    pm.expect(bill).to.not.have.property('bill_no');",
+                      "    pm.expect(bill).to.not.have.property('bill_nm');",
+                      "    pm.expect(bill).to.not.have.property('pay_amt');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 - MyData 경유 정상 납부 성공 (매핑된 필드명)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"billNo\": \"BILL-2024-001\",\n  \"amount\": 50000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/giro/payment",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('매핑된 납부 결과 데이터 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.have.property('paymentNumber');",
+                      "    pm.expect(data.billNumber).to.eql('BILL-2024-001');",
+                      "    pm.expect(data.paymentAmount).to.eql(50000);",
+                      "    pm.expect(data.paymentStatus).to.eql('COMPLETED');",
+                      "});",
+                      "",
+                      "pm.test('원래 약어 필드명 없음 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.not.have.property('pay_no');",
+                      "    pm.expect(data).to.not.have.property('bill_no');",
+                      "    pm.expect(data).to.not.have.property('pay_amt');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "GIRO 실패 케이스",
+          "item": [
+            {
+              "name": "지로청구서목록조회 실패 - MyData 경유 고객 미존재 (GIRO001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/giro/bills?custId=9999999",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "custId",
+                      "value": "9999999"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode GIRO001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('GIRO001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('고객을 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로납부 실패 - MyData 경유 납부기한 만료 (GIRO002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"billNo\": \"BILL-EXPIRED-001\",\n  \"amount\": 50000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/giro/payment",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "giro", "payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode GIRO002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('GIRO002');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('납부기한이 만료되었습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "지로청구서목록조회 실패 - MyData 경유 GIRO 서버 연결 실패 (CONNECTION_ERROR)",
+              "request": {
+                "description": "GIRO Server(8084)가 중지된 상태에서 실행해야 합니다.",
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/giro/bills?custId=C001",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "giro", "bills"],
+                  "query": [
+                    {
+                      "key": "custId",
                       "value": "C001"
                     }
                   ]

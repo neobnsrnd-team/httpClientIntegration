@@ -21,4 +21,6 @@ public class MessageSpecProperties {
     private Map<String, String> queryParams = new LinkedHashMap<>();
 
     private Map<String, String> bodyFields = new LinkedHashMap<>();
+
+    private Map<String, String> responseMapping = new LinkedHashMap<>();
 }

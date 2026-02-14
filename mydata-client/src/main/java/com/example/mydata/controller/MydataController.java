@@ -63,4 +63,18 @@ public class MydataController {
         long amount = ((Number) request.get("amount")).longValue();
         return ResponseEntity.ok(MydataResponse.success(mydataService.payPremium(policyNo, amount)));
     }
+
+    // ========== GIRO ==========
+
+    @GetMapping("/giro/bills")
+    public ResponseEntity<MydataResponse<?>> getBillList(@RequestParam String custId) {
+        return ResponseEntity.ok(MydataResponse.success(mydataService.getBillList(custId)));
+    }
+
+    @PostMapping("/giro/payment")
+    public ResponseEntity<MydataResponse<?>> payBill(@RequestBody Map<String, Object> request) {
+        String billNo = (String) request.get("billNo");
+        long amount = ((Number) request.get("amount")).longValue();
+        return ResponseEntity.ok(MydataResponse.success(mydataService.payBill(billNo, amount)));
+    }
 }

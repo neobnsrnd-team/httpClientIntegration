@@ -1,0 +1,11 @@
+server:
+  port: 8084
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: giro-server

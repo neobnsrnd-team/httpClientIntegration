@@ -15,4 +15,6 @@ public class ExternalSystemsProperties {
     private SystemProperties card = new SystemProperties();
 
     private SystemProperties insurance = new SystemProperties();
+
+    private SystemProperties giro = new SystemProperties();
 }
