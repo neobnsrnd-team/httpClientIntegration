@@ -13,4 +13,6 @@ public class ExternalSystemsProperties {
     private SystemProperties bank = new SystemProperties();
 
     private SystemProperties card = new SystemProperties();
+
+    private SystemProperties insurance = new SystemProperties();
 }

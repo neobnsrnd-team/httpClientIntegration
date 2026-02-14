@@ -2,6 +2,7 @@ package com.example.mydata.service;
 
 import com.example.mydata.client.bank.BankMessageClient;
 import com.example.mydata.client.card.CardMessageClient;
+import com.example.mydata.client.insurance.InsuranceMessageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ public class MydataService {
 
     private final BankMessageClient bankMessageClient;
     private final CardMessageClient cardMessageClient;
+    private final InsuranceMessageClient insuranceMessageClient;
 
     // ========== Banking ==========
 
@@ -52,6 +54,23 @@ public class MydataService {
         log.info("[Card] 결제예정금액조회 요청: cardNo={}", cardNo);
         return cardMessageClient.request("결제예정금액조회", Map.of(
                 "cardNo", cardNo
+        ));
+    }
+
+    // ========== Insurance ==========
+
+    public Map<String, Object> getPolicyList(String customerId) {
+        log.info("[Insurance] 보험가입내역조회 요청: customerId={}", customerId);
+        return insuranceMessageClient.request("보험가입내역조회", Map.of(
+                "customerId", customerId
+        ));
+    }
+
+    public Map<String, Object> payPremium(String policyNo, long amount) {
+        log.info("[Insurance] 보험료납부 요청: policyNo={}, amount={}", policyNo, amount);
+        return insuranceMessageClient.request("보험료납부", Map.of(
+                "policyNo", policyNo,
+                "amount", amount
         ));
     }
 }

@@ -197,5 +197,49 @@ class CardMessageClientTest {
                     cardMessageClient.request("결제예정금액조회", Map.of())
             );
         }
+
+        @Test
+        @DisplayName("외부 시스템이 404 응답 시 NOT_FOUND ExternalSystemException이 발생한다")
+        void notFound_throwsException() {
+            mockServer.expect(requestTo("http://localhost:8082/api/card/cards"))
+                    .andRespond(withResourceNotFound());
+
+            ExternalSystemException exception = assertThrows(ExternalSystemException.class, () ->
+                    cardMessageClient.request("보유카드목록조회", Map.of())
+            );
+
+            assertEquals("NOT_FOUND", exception.getErrorCode());
+            assertTrue(exception.getErrorMessage().contains("외부 시스템 리소스를 찾을 수 없습니다"));
+        }
+
+        @Test
+        @DisplayName("외부 시스템이 400 응답 시 BAD_REQUEST ExternalSystemException이 발생한다")
+        void badRequest_throwsException() {
+            mockServer.expect(requestTo("http://localhost:8082/api/card/cards/1234-5678-9012-3456/scheduled-payments"))
+                    .andRespond(withBadRequest());
+
+            ExternalSystemException exception = assertThrows(ExternalSystemException.class, () ->
+                    cardMessageClient.request("결제예정금액조회", Map.of(
+                            "cardNo", "1234-5678-9012-3456"
+                    ))
+            );
+
+            assertEquals("BAD_REQUEST", exception.getErrorCode());
+            assertTrue(exception.getErrorMessage().contains("외부 시스템 요청이 잘못되었습니다"));
+        }
+
+        @Test
+        @DisplayName("외부 시스템이 500 응답 시 SERVER_ERROR ExternalSystemException이 발생한다")
+        void serverError_throwsException() {
+            mockServer.expect(requestTo("http://localhost:8082/api/card/cards"))
+                    .andRespond(withServerError());
+
+            ExternalSystemException exception = assertThrows(ExternalSystemException.class, () ->
+                    cardMessageClient.request("보유카드목록조회", Map.of())
+            );
+
+            assertEquals("SERVER_ERROR", exception.getErrorCode());
+            assertTrue(exception.getErrorMessage().contains("외부 시스템 서버 오류"));
+        }
     }
 }

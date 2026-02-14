@@ -1,0 +1,1902 @@
+{
+  "info": {
+    "name": "MyData API 테스트",
+    "_postman_id": "mydata-api-test-collection",
+    "description": "MyData HTTP Client Integration - Banking, Card & Insurance API 테스트 컬렉션",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "bankBaseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "cardBaseUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "insuranceBaseUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "mydataBaseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Banking API",
+      "item": [
+        {
+          "name": "성공 케이스",
+          "item": [
+            {
+              "name": "계좌목록조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/accounts",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "accounts"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 0000 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('0000');",
+                      "    pm.expect(json.result_msg).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('계좌 목록 3건 반환 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.an('array');",
+                      "    pm.expect(json.data).to.have.lengthOf(3);",
+                      "});",
+                      "",
+                      "pm.test('계좌 데이터 필드 존재 확인', function () {",
+                      "    var account = pm.response.json().data[0];",
+                      "    pm.expect(account).to.have.property('accountNo');",
+                      "    pm.expect(account).to.have.property('accountName');",
+                      "    pm.expect(account).to.have.property('bankCode');",
+                      "    pm.expect(account).to.have.property('balance');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 - 정상 이체 성공",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/transfer",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 0000 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('0000');",
+                      "    pm.expect(json.result_msg).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('이체 결과 데이터 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.have.property('transactionId');",
+                      "    pm.expect(data.status).to.eql('COMPLETED');",
+                      "    pm.expect(data.transferredAmount).to.eql(10000);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "거래내역조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/accounts/110-234-567890/transactions?fromDate=20240101&toDate=20241231",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "accounts", "110-234-567890", "transactions"],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "20240101"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "20241231"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 0000 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('0000');",
+                      "    pm.expect(json.result_msg).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('거래내역 3건 반환 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.an('array');",
+                      "    pm.expect(json.data).to.have.lengthOf(3);",
+                      "});",
+                      "",
+                      "pm.test('거래내역 데이터 필드 존재 확인', function () {",
+                      "    var tx = pm.response.json().data[0];",
+                      "    pm.expect(tx).to.have.property('transactionId');",
+                      "    pm.expect(tx).to.have.property('transactionDate');",
+                      "    pm.expect(tx).to.have.property('description');",
+                      "    pm.expect(tx).to.have.property('transactionType');",
+                      "    pm.expect(tx).to.have.property('amount');",
+                      "    pm.expect(tx).to.have.property('balanceAfter');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "실패 케이스",
+          "item": [
+            {
+              "name": "이체 실패 - 출금계좌 미존재 (E001)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"999-999-999\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/transfer",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"출금계좌를 찾을 수 없습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_msg).to.eql('출금계좌를 찾을 수 없습니다');",
+                      "});",
+                      "",
+                      "pm.test('data 필드 null 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.null;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 실패 - 이체한도 초과 (E002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 50000000\n}"
+                },
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/transfer",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 E002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('E002');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"이체한도를 초과하였습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_msg).to.eql('이체한도를 초과하였습니다');",
+                      "});",
+                      "",
+                      "pm.test('data 필드 null 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.null;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 실패 - 잔액 부족 (E003)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 8000000\n}"
+                },
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/transfer",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 E003 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('E003');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"잔액이 부족합니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_msg).to.eql('잔액이 부족합니다');",
+                      "});",
+                      "",
+                      "pm.test('data 필드 null 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.null;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "존재하지 않는 API 경로 호출 (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/nonexistent",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "nonexistent"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 404 확인', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('에러 응답에 status 404 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(404);",
+                      "    pm.expect(json.error).to.eql('Not Found');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "잘못된 요청 Body 전송 (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "invalid json body"
+                },
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/transfer",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('에러 응답에 status 400 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(400);",
+                      "    pm.expect(json.error).to.eql('Bad Request');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "거래내역조회 실패 - 계좌 미존재 (E001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{bankBaseUrl}}/api/bank/accounts/999-999-999/transactions?fromDate=20240101&toDate=20241231",
+                  "host": ["{{bankBaseUrl}}"],
+                  "path": ["api", "bank", "accounts", "999-999-999", "transactions"],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "20240101"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "20241231"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_code).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"계좌를 찾을 수 없습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result_msg).to.eql('계좌를 찾을 수 없습니다');",
+                      "});",
+                      "",
+                      "pm.test('data 필드 null 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.be.null;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Card API",
+      "item": [
+        {
+          "name": "성공 케이스",
+          "item": [
+            {
+              "name": "보유카드목록조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{cardBaseUrl}}/api/card/cards",
+                  "host": ["{{cardBaseUrl}}"],
+                  "path": ["api", "card", "cards"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답 상태 SUCCESS 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql('SUCCESS');",
+                      "    pm.expect(json.message).to.eql('처리완료');",
+                      "});",
+                      "",
+                      "pm.test('카드 목록 2건 반환 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.payload).to.be.an('array');",
+                      "    pm.expect(json.payload).to.have.lengthOf(2);",
+                      "});",
+                      "",
+                      "pm.test('카드 데이터 필드 존재 확인', function () {",
+                      "    var card = pm.response.json().payload[0];",
+                      "    pm.expect(card).to.have.property('cardNo');",
+                      "    pm.expect(card).to.have.property('cardName');",
+                      "    pm.expect(card).to.have.property('cardType');",
+                      "    pm.expect(card).to.have.property('issuerName');",
+                      "    pm.expect(card).to.have.property('monthlyLimit');",
+                      "    pm.expect(card).to.have.property('usedAmount');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{cardBaseUrl}}/api/card/cards/1234-5678-9012-3456/scheduled-payments",
+                  "host": ["{{cardBaseUrl}}"],
+                  "path": ["api", "card", "cards", "1234-5678-9012-3456", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답 상태 SUCCESS 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql('SUCCESS');",
+                      "    pm.expect(json.message).to.eql('처리완료');",
+                      "});",
+                      "",
+                      "pm.test('결제예정 데이터 필드 존재 확인', function () {",
+                      "    var payload = pm.response.json().payload;",
+                      "    pm.expect(payload).to.have.property('cardNo', '1234-5678-9012-3456');",
+                      "    pm.expect(payload).to.have.property('paymentDate');",
+                      "    pm.expect(payload).to.have.property('totalAmount', 650000);",
+                      "});",
+                      "",
+                      "pm.test('결제예정 상세내역 2건 확인', function () {",
+                      "    var details = pm.response.json().payload.details;",
+                      "    pm.expect(details).to.be.an('array');",
+                      "    pm.expect(details).to.have.lengthOf(2);",
+                      "});",
+                      "",
+                      "pm.test('결제예정 상세내역 필드 존재 확인', function () {",
+                      "    var detail = pm.response.json().payload.details[0];",
+                      "    pm.expect(detail).to.have.property('merchantName');",
+                      "    pm.expect(detail).to.have.property('transactionDate');",
+                      "    pm.expect(detail).to.have.property('amount');",
+                      "    pm.expect(detail).to.have.property('installmentMonth');",
+                      "    pm.expect(detail).to.have.property('totalInstallments');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "실패 케이스",
+          "item": [
+            {
+              "name": "존재하지 않는 API 경로 호출 (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{cardBaseUrl}}/api/card/nonexistent",
+                  "host": ["{{cardBaseUrl}}"],
+                  "path": ["api", "card", "nonexistent"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 404 확인', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('에러 응답에 status 404 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(404);",
+                      "    pm.expect(json.error).to.eql('Not Found');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 실패 - 카드 미존재 (CARD_NOT_FOUND)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{cardBaseUrl}}/api/card/cards/9999-9999-9999-9999/scheduled-payments",
+                  "host": ["{{cardBaseUrl}}"],
+                  "path": ["api", "card", "cards", "9999-9999-9999-9999", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답 상태 FAIL 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql('FAIL');",
+                      "});",
+                      "",
+                      "pm.test('에러코드 CARD_NOT_FOUND 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.error_code).to.eql('CARD_NOT_FOUND');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"카드를 찾을 수 없습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.message).to.eql('카드를 찾을 수 없습니다');",
+                      "});",
+                      "",
+                      "pm.test('payload 필드 없음 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.payload).to.be.undefined;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 실패 - 해지된 카드 (CARD_CANCELLED)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{cardBaseUrl}}/api/card/cards/0000-0000-0000-0000/scheduled-payments",
+                  "host": ["{{cardBaseUrl}}"],
+                  "path": ["api", "card", "cards", "0000-0000-0000-0000", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답 상태 FAIL 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql('FAIL');",
+                      "});",
+                      "",
+                      "pm.test('에러코드 CARD_CANCELLED 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.error_code).to.eql('CARD_CANCELLED');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"해지된 카드입니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.message).to.eql('해지된 카드입니다');",
+                      "});",
+                      "",
+                      "pm.test('payload 필드 없음 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.payload).to.be.undefined;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Insurance API",
+      "item": [
+        {
+          "name": "성공 케이스",
+          "item": [
+            {
+              "name": "보험가입내역조회 - 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/policies?customerId=C001",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 00 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('00');",
+                      "    pm.expect(json.msg).to.eql('정상처리');",
+                      "});",
+                      "",
+                      "pm.test('보험 목록 2건 반환 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.result).to.be.an('array');",
+                      "    pm.expect(json.result).to.have.lengthOf(2);",
+                      "});",
+                      "",
+                      "pm.test('보험 데이터 필드 존재 확인', function () {",
+                      "    var policy = pm.response.json().result[0];",
+                      "    pm.expect(policy).to.have.property('policyNo');",
+                      "    pm.expect(policy).to.have.property('policyName');",
+                      "    pm.expect(policy).to.have.property('insuranceType');",
+                      "    pm.expect(policy).to.have.property('premiumAmount');",
+                      "    pm.expect(policy).to.have.property('status');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 - 정상 납부 성공",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policyNo\": \"POL-2024-001\",\n  \"amount\": 150000\n}"
+                },
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/premium-payment",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('응답코드 00 (성공) 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('00');",
+                      "    pm.expect(json.msg).to.eql('정상처리');",
+                      "});",
+                      "",
+                      "pm.test('납부 결과 데이터 확인', function () {",
+                      "    var result = pm.response.json().result;",
+                      "    pm.expect(result).to.have.property('paymentId');",
+                      "    pm.expect(result.policyNo).to.eql('POL-2024-001');",
+                      "    pm.expect(result.paidAmount).to.eql(150000);",
+                      "    pm.expect(result.status).to.eql('COMPLETED');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "비즈니스 에러 케이스",
+          "item": [
+            {
+              "name": "보험가입내역조회 실패 - 고객 미존재 (INS001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/policies?customerId=9999999",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "9999999"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 INS001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('INS001');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"고객을 찾을 수 없습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.msg).to.eql('고객을 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 실패 - 만료된 보험 (INS002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policyNo\": \"POL-EXPIRED-001\",\n  \"amount\": 150000\n}"
+                },
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/premium-payment",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 INS002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('INS002');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"만료된 보험입니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.msg).to.eql('만료된 보험입니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 실패 - 금액 오류 (INS003)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policyNo\": \"POL-2024-001\",\n  \"amount\": -1000\n}"
+                },
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/premium-payment",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('에러코드 INS003 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('INS003');",
+                      "});",
+                      "",
+                      "pm.test('에러메시지 \"납부 금액이 올바르지 않습니다\" 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.msg).to.eql('납부 금액이 올바르지 않습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "HTTP 에러 케이스",
+          "item": [
+            {
+              "name": "보험가입내역조회 실패 - customerId 누락 (400)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/policies",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "policies"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 실패 - 잘못된 JSON Body (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "invalid json body"
+                },
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/premium-payment",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험가입내역조회 실패 - 시스템 장애 (500)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{insuranceBaseUrl}}/api/insurance/policies?customerId=ERROR",
+                  "host": ["{{insuranceBaseUrl}}"],
+                  "path": ["api", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "ERROR"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 500 확인', function () {",
+                      "    pm.response.to.have.status(500);",
+                      "});",
+                      "",
+                      "pm.test('시스템 장애 에러코드 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.code).to.eql('SYS001');",
+                      "    pm.expect(json.msg).to.eql('시스템 장애가 발생했습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MyData Client API (통합)",
+      "description": "MyData Client(8080)를 통한 Banking/Card/Insurance 통합 호출 테스트. 응답은 MydataResponse 표준 포맷으로 반환됩니다.",
+      "item": [
+        {
+          "name": "Banking 성공 케이스",
+          "item": [
+            {
+              "name": "계좌목록조회 - MyData 경유 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/accounts",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "accounts"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "    pm.expect(json.resultMessage).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('파싱된 계좌 목록 반환 확인 (data.items 래핑)', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('items');",
+                      "    pm.expect(json.data.items).to.be.an('array');",
+                      "    pm.expect(json.data.items.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('계좌 데이터 필드 존재 확인', function () {",
+                      "    var account = pm.response.json().data.items[0];",
+                      "    pm.expect(account).to.have.property('accountNo');",
+                      "    pm.expect(account).to.have.property('accountName');",
+                      "    pm.expect(account).to.have.property('balance');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 - MyData 경유 정상 이체 성공",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/transfer",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('이체 결과 데이터 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.have.property('transactionId');",
+                      "    pm.expect(data.status).to.eql('COMPLETED');",
+                      "    pm.expect(data.transferredAmount).to.eql(10000);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "거래내역조회 - MyData 경유 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/accounts/110-234-567890/transactions?fromDate=20240101&toDate=20241231",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "accounts", "110-234-567890", "transactions"],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "20240101"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "20241231"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('파싱된 거래내역 목록 반환 확인 (data.items 래핑)', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('items');",
+                      "    pm.expect(json.data.items).to.be.an('array');",
+                      "    pm.expect(json.data.items.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('거래내역 데이터 필드 존재 확인', function () {",
+                      "    var tx = pm.response.json().data.items[0];",
+                      "    pm.expect(tx).to.have.property('transactionId');",
+                      "    pm.expect(tx).to.have.property('description');",
+                      "    pm.expect(tx).to.have.property('amount');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Banking 실패 케이스",
+          "item": [
+            {
+              "name": "이체 실패 - MyData 경유 출금계좌 미존재 (E001)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"999-999-999\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/transfer",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "    pm.expect(json.resultMessage).to.eql('외부 시스템 오류');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('출금계좌를 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 실패 - MyData 경유 이체한도 초과 (E002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 50000000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/transfer",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode E002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('E002');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('이체한도를 초과하였습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "이체 실패 - MyData 경유 잔액 부족 (E003)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fromAccountNo\": \"110-234-567890\",\n  \"toAccountNo\": \"110-987-654321\",\n  \"amount\": 8000000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/transfer",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "transfer"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode E003 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('E003');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('잔액이 부족합니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "계좌목록조회 실패 - MyData 경유 Banking 서버 연결 실패 (CONNECTION_ERROR)",
+              "request": {
+                "description": "Banking Server(8081)가 중지된 상태에서 실행해야 합니다.",
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/accounts",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "accounts"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode CONNECTION_ERROR 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('CONNECTION_ERROR');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage에 \"외부 시스템 연결 실패\" 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.include('외부 시스템 연결 실패');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "거래내역조회 실패 - MyData 경유 계좌 미존재 (E001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/bank/accounts/999-999-999/transactions?fromDate=20240101&toDate=20241231",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "bank", "accounts", "999-999-999", "transactions"],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "20240101"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "20241231"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.include('계좌를 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Card 성공 케이스",
+          "item": [
+            {
+              "name": "보유카드목록조회 - MyData 경유 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/card/cards",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "card", "cards"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('파싱된 카드 목록 반환 확인 (data.items 래핑)', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('items');",
+                      "    pm.expect(json.data.items).to.be.an('array');",
+                      "    pm.expect(json.data.items.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('카드 데이터 필드 존재 확인', function () {",
+                      "    var card = pm.response.json().data.items[0];",
+                      "    pm.expect(card).to.have.property('cardNo');",
+                      "    pm.expect(card).to.have.property('cardName');",
+                      "    pm.expect(card).to.have.property('cardType');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 - MyData 경유 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/card/cards/1234-5678-9012-3456/scheduled-payments",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "card", "cards", "1234-5678-9012-3456", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('결제예정 데이터 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.have.property('cardNo', '1234-5678-9012-3456');",
+                      "    pm.expect(data).to.have.property('paymentDate');",
+                      "    pm.expect(data).to.have.property('totalAmount', 650000);",
+                      "});",
+                      "",
+                      "pm.test('결제예정 상세내역 2건 확인', function () {",
+                      "    var details = pm.response.json().data.details;",
+                      "    pm.expect(details).to.be.an('array');",
+                      "    pm.expect(details).to.have.lengthOf(2);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Card 실패 케이스",
+          "item": [
+            {
+              "name": "보유카드목록조회 실패 - MyData 경유 Card 서버 연결 실패 (CONNECTION_ERROR)",
+              "request": {
+                "description": "Card Server(8082)가 중지된 상태에서 실행해야 합니다.",
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/card/cards",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "card", "cards"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode CONNECTION_ERROR 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('CONNECTION_ERROR');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage에 \"외부 시스템 연결 실패\" 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.include('외부 시스템 연결 실패');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 실패 - MyData 경유 카드 미존재 (CARD_NOT_FOUND)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/card/cards/9999-9999-9999-9999/scheduled-payments",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "card", "cards", "9999-9999-9999-9999", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode FAIL 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('FAIL');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('카드를 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "결제예정금액조회 실패 - MyData 경유 해지된 카드 (CARD_CANCELLED)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/card/cards/0000-0000-0000-0000/scheduled-payments",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "card", "cards", "0000-0000-0000-0000", "scheduled-payments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode FAIL 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('FAIL');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('해지된 카드입니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Insurance 성공 케이스",
+          "item": [
+            {
+              "name": "보험가입내역조회 - MyData 경유 정상 조회 성공",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/insurance/policies?customerId=C001",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "    pm.expect(json.resultMessage).to.eql('성공');",
+                      "});",
+                      "",
+                      "pm.test('보험 목록 반환 확인 (data.items 래핑)', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('items');",
+                      "    pm.expect(json.data.items).to.be.an('array');",
+                      "    pm.expect(json.data.items).to.have.lengthOf(2);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 - MyData 경유 정상 납부 성공",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policyNo\": \"POL-2024-001\",\n  \"amount\": 150000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/insurance/premium-payment",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 200 확인', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('resultCode 0000 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('0000');",
+                      "});",
+                      "",
+                      "pm.test('납부 결과 데이터 확인', function () {",
+                      "    var data = pm.response.json().data;",
+                      "    pm.expect(data).to.have.property('paymentId');",
+                      "    pm.expect(data.policyNo).to.eql('POL-2024-001');",
+                      "    pm.expect(data.paidAmount).to.eql(150000);",
+                      "    pm.expect(data.status).to.eql('COMPLETED');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Insurance 실패 케이스",
+          "item": [
+            {
+              "name": "보험가입내역조회 실패 - MyData 경유 고객 미존재 (INS001)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/insurance/policies?customerId=9999999",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "9999999"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode INS001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('INS001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('고객을 찾을 수 없습니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험료납부 실패 - MyData 경유 만료된 보험 (INS002)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policyNo\": \"POL-EXPIRED-001\",\n  \"amount\": 150000\n}"
+                },
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/insurance/premium-payment",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "insurance", "premium-payment"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode INS002 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('INS002');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.eql('만료된 보험입니다');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "보험가입내역조회 실패 - MyData 경유 Insurance 서버 연결 실패 (CONNECTION_ERROR)",
+              "request": {
+                "description": "Insurance Server(8083)가 중지된 상태에서 실행해야 합니다.",
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mydataBaseUrl}}/api/mydata/insurance/policies?customerId=C001",
+                  "host": ["{{mydataBaseUrl}}"],
+                  "path": ["api", "mydata", "insurance", "policies"],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "C001"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('응답 상태코드 400 확인 (에러 래핑)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('resultCode E001 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.resultCode).to.eql('E001');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorCode CONNECTION_ERROR 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorCode).to.eql('CONNECTION_ERROR');",
+                      "});",
+                      "",
+                      "pm.test('externalErrorMessage에 \"외부 시스템 연결 실패\" 포함 확인', function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.externalErrorMessage).to.include('외부 시스템 연결 실패');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

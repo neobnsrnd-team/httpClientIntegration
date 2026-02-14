@@ -21,6 +21,7 @@
     <modules>
         <module>banking-server</module>
         <module>card-server</module>
+        <module>insurance-server</module>
         <module>mydata-client</module>
     </modules>
 

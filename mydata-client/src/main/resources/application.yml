@@ -61,3 +61,26 @@ external-systems:
         path: /api/card/cards/{cardNo}/scheduled-payments
         path-variables:
           - cardNo
+
+  insurance:
+    base-url: http://localhost:8083
+    success-code-field: code
+    success-code-value: "00"
+    error-message-field: msg
+    data-field: result
+    connect-timeout: 5000
+    read-timeout: 10000
+    messages:
+      policy-list:
+        transaction-code: 보험가입내역조회
+        method: GET
+        path: /api/insurance/policies
+        query-params:
+          customerId: customerId
+      premium-payment:
+        transaction-code: 보험료납부
+        method: POST
+        path: /api/insurance/premium-payment
+        body-fields:
+          policyNo: policyNo
+          amount: amount
